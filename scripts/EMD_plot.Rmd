@@ -1,0 +1,39 @@
+```{r}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(ggpubr)
+library(grid)
+library(gtable)
+library(magrittr)
+```
+
+```{r}
+EMD=read.csv("../prediction_stats/emd.csv")
+EMD$Method <- factor(EMD$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+EMD$Dataset <- factor(EMD$Dataset, levels = c("HIV9exp", "HIV2exp", "HIV5exp", "HIV7sim", "IAV10sim"))
+```
+
+```{r}
+draw_emd<-function(y_column) {
+return(ggplot(EMD, aes(y=y_column, x=Dataset,shape=Method, color=Method)) +
+  geom_point(size=1,stroke=0.7) +
+  theme_classic(base_size = 8) +
+  theme(axis.text.x=element_text(angle=-20, hjust=-0.1),
+        axis.title.x=element_blank()) +
+  #theme(legend.position="bottom") +
+  #scale_y_discrete(limits = rev(unique(sort(EMD$Dataset)))) +
+  ylab("EMD(T,P)") +
+  scale_y_continuous(breaks = function(x) unique(
+      floor(pretty(seq(0.5, 25)))), expand = c(0, 0.5)) +
+  scale_color_manual(values = c("red","black","blue","darkgreen")) +
+  scale_shape_manual(values=c(6, 2, 4, 3)) +
+  labs(shape = "Haplotyping\nmethod:", color = "Haplotyping\nmethod:"))
+}
+g<-draw_emd(EMD$EMD)
+#g1<-draw_emd(EMD$EMD_norm)
+
+ggsave("picture4.png", plot = g, device = NULL, path = NULL,
+  scale = 1, width = 89, height = 50, units = "mm",
+  dpi = 600, limitsize = TRUE)
+```

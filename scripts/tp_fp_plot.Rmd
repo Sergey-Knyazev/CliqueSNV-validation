@@ -1,0 +1,147 @@
+```{r}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(ggpubr)
+library(grid)
+library(gtable)
+library(magrittr)
+```
+
+```{r}
+hiv9exp_ect = read.csv("../prediction_stats/HIV9exp_ECT.csv")
+hiv2exp_ect = read.csv("../prediction_stats/HIV2exp_ECT.csv")
+hiv5exp_ect = read.csv("../prediction_stats/HIV5exp_ECT.csv")
+hiv7sim_ect = read.csv("../prediction_stats/HIV7sim_ECT.csv")
+iav10sim_ect = read.csv("../prediction_stats/IAV10sim_ECT.csv")
+
+hiv9exp_ect$Method <- factor(hiv9exp_ect$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+hiv2exp_ect$Method <- factor(hiv2exp_ect$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+hiv5exp_ect$Method <- factor(hiv5exp_ect$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+hiv7sim_ect$Method <- factor(hiv7sim_ect$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+iav10sim_ect$Method <- factor(iav10sim_ect$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+```
+
+```{r}
+hiv9exp_ecp = read.csv("../prediction_stats/HIV9exp_ECP.csv")
+hiv2exp_ecp = read.csv("../prediction_stats/HIV2exp_ECP.csv")
+hiv5exp_ecp = read.csv("../prediction_stats/HIV5exp_ECP.csv")
+hiv7sim_ecp = read.csv("../prediction_stats/HIV7sim_ECP.csv")
+iav10sim_ecp = read.csv("../prediction_stats/IAV10sim_ECP.csv")
+
+hiv9exp_ecp$Method <- factor(hiv9exp_ecp$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+hiv2exp_ecp$Method <- factor(hiv2exp_ecp$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+hiv5exp_ecp$Method <- factor(hiv5exp_ecp$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+hiv7sim_ecp$Method <- factor(hiv7sim_ecp$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+iav10sim_ecp$Method <- factor(iav10sim_ecp$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+```
+
+```{r}
+tp_graph <- function(f, title) {
+  return(merge(f,data.frame(mismatch=c(0:max(30)))) %>%
+  group_by(Method,mismatch) %>%
+  summarise(count=sum(ECP<=mismatch)) %>%
+  ggplot(aes(x=mismatch, y=count, color=Method)) + geom_line(size=0.5) +
+  theme_classic(base_size = 8) +
+  ylab("Number of True Predicted") +
+  geom_point(aes(shape=Method), size=1, stroke = 0.7) +
+  scale_y_continuous(breaks = function(x) unique(
+      floor(pretty(seq(0, (max(x) + 1) * 1.1)))), expand = c(0, 0)) +
+  scale_x_continuous(breaks = function(x) unique(
+      floor(pretty(seq(0, (max(x) + 1) * 1.1)))), expand = c(0, 0)) +
+  coord_cartesian(xlim = c(0, 30), ylim = c(0, length(f$ECP)/4+0.2)) +
+  ggtitle(title) +
+  theme(plot.title=element_text(hjust=0.5), legend.position = "none",
+        axis.title.x=element_blank()) +
+  scale_color_manual(values = c("red","black","blue","darkgreen")) +
+  scale_shape_manual(values=c(6, 2, 4, 3)))
+  
+}
+fp_graph <- function(f) {
+  d<-merge(f,data.frame(mismatch=c(0:max(30)))) %>%
+  group_by(Method,mismatch) %>%
+  summarise(count=sum(ECT>mismatch))
+  return(ggplot(d, aes(x=mismatch, y=count, color=Method))+
+           geom_line(size=0.5) +
+  theme_classic(base_size = 8) +
+  ylab("Number of False Predicted") +
+  geom_point(aes(shape=Method), size=1, stroke = 0.7) +
+  scale_y_continuous(breaks = function(x) unique(
+      floor(pretty(seq(0, (max(x) + 1) * 1.1)))), expand = c(0, 0)) +
+  scale_x_continuous(breaks = function(x) unique(
+      floor(pretty(seq(0, (max(x) + 1) * 1.1)))), expand = c(0, 0)) +
+  coord_cartesian(xlim = c(0, 30),ylim=c(0,max(d$count)+0.2)) +
+  theme(plot.title=element_text(hjust=0.5), legend.position = "none") +
+  xlab("Number of Accepted Mismatches") +
+  scale_color_manual(values = c("red","black","blue","darkgreen")) +
+  scale_shape_manual(values=c(6, 2, 4, 3)))
+}
+
+```
+
+```{r}
+p1_1 <- tp_graph(hiv9exp_ecp, "HIV9exp")
+p2_1 <- tp_graph(hiv2exp_ecp, "HIV2exp")
+p3_1 <- tp_graph(hiv5exp_ecp, "HIV5exp")
+p4_1 <- tp_graph(hiv7sim_ecp, "HIV7sim")
+p5_1 <- tp_graph(iav10sim_ecp, "IAV10sim")
+
+
+p1_2<-fp_graph(hiv9exp_ect)
+p2_2<-fp_graph(hiv2exp_ect)
+p3_2<-fp_graph(hiv5exp_ect)
+p4_2<-fp_graph(hiv7sim_ect)
+p5_2<-fp_graph(iav10sim_ect)
+
+p6_1<-as_ggplot(get_legend(
+  ggplot(x, aes(x=APE, y=ADC, fill = Method,group=Method, shape=Method, color=Method)) + 
+  geom_point(size=2, stroke = 1) +
+  scale_shape_manual(values=c(6, 2, 4, 3)) +
+  scale_color_manual(values = c("red","black","blue","darkgreen")) +
+  labs(fill = "Haplotyping\nmethod:", color = "Haplotyping\nmethod:",
+       group = "Haplotyping\nmethod:", shape = "Haplotyping\nmethod:") +
+  theme_classic(base_size = 14)))
+p6_2<-ggplot() + theme_classic()
+```
+
+```{r}
+g1_1<-ggplotGrob(p1_1)
+g1_2<-ggplotGrob(p1_2)
+g1<-rbind(g1_1,g1_2,size="last")
+g1.width<-unit.pmax(g1_1$width,g1_2$width)
+
+g2_1<-ggplotGrob(p2_1)
+g2_2<-ggplotGrob(p2_2)
+g2<-rbind(g2_1,g2_2,size="last")
+g2.width<-unit.pmax(g2_1$width,g2_2$width)
+
+g3_1<-ggplotGrob(p3_1)
+g3_2<-ggplotGrob(p3_2)
+g3<-rbind(g3_1,g3_2,size="last")
+g3.width<-unit.pmax(g3_1$width,g3_2$width)
+
+g4_1<-ggplotGrob(p4_1)
+g4_2<-ggplotGrob(p4_2)
+g4<-rbind(g4_1,g4_2,size="last")
+g4.width<-unit.pmax(g4_1$width,g4_2$width)
+
+g5_1<-ggplotGrob(p5_1)
+g5_2<-ggplotGrob(p5_2)
+g5<-rbind(g5_1,g5_2,size="last")
+g5.width<-unit.pmax(g5_1$width,g5_2$width)
+
+g6_1<-ggplotGrob(p6_1)
+g6_2<-ggplotGrob(p6_2)
+g6<-rbind(g6_1,g6_2,size="first")
+g6.width<-unit.pmax(g6_1$width,g6_2$width)
+```
+```{r}
+g<-ggarrange(g1,g2,g3,g4,g5,g6_1,nrow=2,ncol=3,
+             labels = c("A", "B", "C", "D", "E", ""))
+
+```
+```{r}
+ggsave("picture2.png", plot = g, device = NULL, path = NULL,
+  scale = 1, width = 183, height = 183, units = "mm",
+  dpi = 600, limitsize = TRUE)
+```

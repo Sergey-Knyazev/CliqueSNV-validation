@@ -1,0 +1,46 @@
+```{r}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(magrittr)
+```
+
+```{r}
+x = read.csv("../prediction_stats/match_dist.csv")
+x$Method <- factor(x$Method, levels = c("CliqueSNV", "PredictHaplo", "aBayesQR", "Consensus"))
+```
+
+```{r}
+library("ggpubr")
+draw_adc_ape <- function(x, m) {
+  return(ggplot(filter(x, Dataset==m), aes(x=APE, y=ADC, fill = Method, color=Method,
+                                       group=Method, shape=Method)) +
+  xlab(expression('E'['T'%->%'P'])) + ylab(expression('E'['T'%<-%'P'])) +
+  labs(fill = "Haplotyping\nmethod:", color = "Haplotyping\nmethod:",
+       group = "Haplotyping\nmethod:", shape = "Haplotyping\nmethod:") +
+  theme_classic(base_size=8) + ggtitle(m) +
+  theme(plot.title=element_text(hjust=0.5), legend.position = "none") +
+  geom_point(size=1,stroke=0.7) +
+  expand_limits(x = 0, y = 0) +
+  coord_cartesian(xlim = c(0, 16), ylim = c(0, 16)) +
+  scale_color_manual(values = c("red","black","blue","darkgreen")) +
+  scale_shape_manual(values=c(6, 2, 4, 3)))
+}
+
+p1<-draw_adc_ape(x, "HIV9exp")
+p2<-draw_adc_ape(x, "HIV2exp")
+p3<-draw_adc_ape(x, "HIV5exp")
+p4<-draw_adc_ape(x, "HIV7sim")
+p5<-draw_adc_ape(x, "IAV10sim")
+p6<-as_ggplot(get_legend(
+  ggplot(x, aes(x=APE, y=ADC, fill = Method,group=Method, shape=Method, color=Method)) +   geom_point() + 
+  scale_color_manual(values = c("red","black","blue","darkgreen")) +
+  scale_shape_manual(values=c(6, 2, 4, 3)) +
+  labs(fill = "Haplotyping\nmethod:", color = "Haplotyping\nmethod:",
+       group = "Haplotyping\nmethod:", shape = "Haplotyping\nmethod:") +
+  theme_classic()))
+g<-grid.arrange(p1,p2,p3,p4,p5,p6, nrow=2)
+ggsave("picture3.png", plot = g, device = NULL, path = NULL,
+  scale = 1, width = 136, height = 89, units = "mm",
+  dpi = 600, limitsize = TRUE)
+```
