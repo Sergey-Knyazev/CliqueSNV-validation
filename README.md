@@ -9,3 +9,6 @@ The reads should be uploaded into `reads` folder at the root of the project. The
 Before running the tools the configuration files for aBayesQR and PredictHaplo may require to be modified.
 The configuration files are located at `tool_configs`.
 Begining of `protocol.ipynb` contains code chunks that set variables that are responsible for setting the paths. These chunks may also require modification.
+
+## cite us
+https://www.biorxiv.org/content/10.1101/264242v1
