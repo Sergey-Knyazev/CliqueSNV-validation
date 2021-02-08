@@ -1,0 +1,10 @@
+*.swp
+reads/
+!reads/readme
+refs/*/*.fa*.*
+.ipynb_checkpoints/
+alignment/
+prediction_stats/
+relevant_haplotypes/*_trm.fasta
+results/
+scripts/*.png
