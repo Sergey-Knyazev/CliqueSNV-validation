@@ -8,7 +8,7 @@ import os, errno
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from Bio.Alphabet import generic_dna
+#from Bio.Alphabet import generic_dna
 import glob
 import shutil
 import subprocess
@@ -77,7 +77,9 @@ class ReadGenerator(object):
         for i in range(len(seqs)):
             seqs[i].seq = Seq(str(primers[0].seq) +
                               str(seqs[i].seq).replace('-', '') +
-                              str(primers[1].seq), generic_dna)
+                              str(primers[1].seq)
+#                              , generic_dna
+                              )
             SeqIO.write(seqs[i], os.path.join(self.__config["work_dir"], '{}.fasta'.format(str(i))), 'fasta')
 
     def __generate_sam(self):

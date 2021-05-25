@@ -1,1 +1,4 @@
-This folder should contain sequencing reads for datasets that are used for validation.
+This folder should contain sequencing reads for datasets that are used for validation. See Table 2 at https://www.biorxiv.org/content/10.1101/264242v4 for the reference.
+The protocol script will generate the reads for simulated datasets.
+For experimental dataset reads can be found at online repositories:
+- HIV5exp - SRR961514
